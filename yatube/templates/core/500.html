@@ -1,0 +1,6 @@
+{% extends "base.html" %}
+{% block title %}Custom 404{% endblock %}
+{% block content %}
+  <h1>500_server_error</h1>
+  <a href="{% url 'posts:index' %}"> Перейти на главную</a>
+{% endblock %}
