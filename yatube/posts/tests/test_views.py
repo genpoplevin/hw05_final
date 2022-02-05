@@ -4,7 +4,7 @@ from django import forms
 from yatube.settings import ARTICLES_SELECTION
 from django.core.cache import cache
 
-from posts.models import Group, Post, User
+from posts.models import Follow, Group, Post, User
 
 
 class PostPagesTest(TestCase):
@@ -52,9 +52,11 @@ class PostPagesTest(TestCase):
         self.user = User.objects.create_user(username='author')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        # Создаем авторизованый клиент, который также автор поста
-        self.author_client = Client()
-        self.author_client.force_login(self.user)
+        # Создаем второго авторизованого пользоватнля
+        self.user1 = User.objects.create_user(username='follower')
+        self.authorized_client1 = Client()
+        self.authorized_client1.force_login(self.user1)
+        cache.clear()
 
     # Проверяем используемые шаблоны
     def test_pages_uses_correct_template(self):
@@ -203,6 +205,24 @@ class PostPagesTest(TestCase):
         cache.clear()
         new_new_response = self.authorized_client.get(reverse('posts:index'))
         self.assertNotEqual(response.content, new_new_response.content)
+
+    def test_authorized_user_can_follow_unfollow(self):
+        """Авторизованный пользователь может подписываться на других
+        пользователей и удалять их из подписок."""
+        author = self.user
+        user = self.user1
+        self.authorized_client1.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': author.username})
+        )
+        self.assertTrue(Follow.objects.filter(user=user,
+                                              author=author).exists())
+        self.authorized_client1.get(
+            reverse('posts:profile_unfollow',
+                    kwargs={'username': author.username})
+        )
+        self.assertFalse(Follow.objects.filter(user=user,
+                                               author=author).exists())
 
 
 class PaginatorViewsTest(TestCase):
