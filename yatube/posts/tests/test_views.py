@@ -239,13 +239,13 @@ class PostPagesTest(TestCase):
                     kwargs={'username': author.username})
         )
         authors1 = Follow.objects.values_list('author').filter(user=user1)
-        post_list = Post.objects.filter(author__in=authors1)
+        post_list1 = Post.objects.filter(author__in=authors1)
         post1 = Post.objects.create(author=author,
                                     text='Тестовый текст',)
-        self.assertIn(post1, post_list)
+        self.assertIn(post1, post_list1)
         authors2 = Follow.objects.values_list('author').filter(user=user2)
-        post_list1 = Post.objects.filter(author__in=authors2)
-        self.assertNotIn(post1, post_list1)
+        post_list2 = Post.objects.filter(author__in=authors2)
+        self.assertNotIn(post1, post_list2)
 
 
 class PaginatorViewsTest(TestCase):
