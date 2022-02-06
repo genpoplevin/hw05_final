@@ -122,8 +122,8 @@ def follow_index(request):
        подписан текущий пользователь."""
     # Информация о текущем пользователе доступна в переменной request.user
     user = request.user
-    authors = Follow.objects.values_list('author')
-    post_list = Post.objects.filter(author__in=authors)
+    following = user.follower.values_list('author')
+    post_list = Post.objects.filter(author__in=following)
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -160,4 +160,4 @@ def profile_unfollow(request, username):
     follow = Follow.objects.filter(user=user,
                                    author=author)
     follow.delete()
-    return redirect('posts:follow_index')
+    return redirect('posts:profile', username)

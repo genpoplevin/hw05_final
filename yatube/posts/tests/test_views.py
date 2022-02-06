@@ -52,11 +52,15 @@ class PostPagesTest(TestCase):
         self.user = User.objects.create_user(username='author')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        # Создаем второго авторизованого пользоватнля
+        # Создаем второго авторизованого пользователя
         self.user1 = User.objects.create_user(username='follower')
         self.authorized_client1 = Client()
         self.authorized_client1.force_login(self.user1)
         cache.clear()
+        # Создаем третьего авторизованого пользователя
+        self.user2 = User.objects.create_user(username='notfollower')
+        self.authorized_client2 = Client()
+        self.authorized_client2.force_login(self.user1)
 
     # Проверяем используемые шаблоны
     def test_pages_uses_correct_template(self):
@@ -223,6 +227,25 @@ class PostPagesTest(TestCase):
         )
         self.assertFalse(Follow.objects.filter(user=user,
                                                author=author).exists())
+
+    def test_post_appears_in_feed(self):
+        """Новая запись пользователя появляется в ленте тех, кто на него
+        подписан и не появляется в ленте тех, кто не подписан."""
+        author = self.user
+        user1 = self.user1
+        user2 = self.user2
+        self.authorized_client1.get(
+            reverse('posts:profile_follow',
+                    kwargs={'username': author.username})
+        )
+        authors1 = Follow.objects.values_list('author').filter(user=user1)
+        post_list = Post.objects.filter(author__in=authors1)
+        post1 = Post.objects.create(author=author,
+                                    text='Тестовый текст',)
+        self.assertIn(post1, post_list)
+        authors2 = Follow.objects.values_list('author').filter(user=user2)
+        post_list1 = Post.objects.filter(author__in=authors2)
+        self.assertNotIn(post1, post_list1)
 
 
 class PaginatorViewsTest(TestCase):
