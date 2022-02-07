@@ -1,6 +1,7 @@
 from django.test import TestCase, Client
 from http import HTTPStatus
 from posts.models import Group, Post, User
+from django.core.cache import cache
 
 
 class StatusURLTests(TestCase):
@@ -50,6 +51,7 @@ class StatusURLTests(TestCase):
         self.authorized_client = Client()
         # Авторизуем пользователя
         self.authorized_client.force_login(self.user)
+        cache.clear()
 
     # Проверка вызываемых шаблонов для каждого адреса
     def test_urls_uses_correct_template(self):

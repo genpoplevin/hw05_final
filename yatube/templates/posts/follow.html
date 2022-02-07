@@ -2,13 +2,13 @@
 {% load thumbnail %}
 
 {% block title %}
-  {{ title }}
+  Подписки пользователя {{ user.get_full_name }}
 {% endblock %}
 
 {% block content %}
 {% include 'posts/includes/switcher.html' %}
-  {% load cache %}
-  {% cache 20 posts page_number %}
+ {% if profile %}
+  
   {% for post in page_obj %}
     <ul>
       <li>
@@ -33,7 +33,7 @@
     {% endif %}
     {% if not forloop.last %}<hr>{% endif %}
   {% endfor %}
-  {% endcache %}
+  {% endif %}
 
   {% include 'posts/includes/paginator.html' %}
 

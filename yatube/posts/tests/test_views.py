@@ -56,7 +56,6 @@ class PostPagesTest(TestCase):
         self.user1 = User.objects.create_user(username='follower')
         self.authorized_client1 = Client()
         self.authorized_client1.force_login(self.user1)
-        cache.clear()
         # Создаем третьего авторизованого пользователя
         self.user2 = User.objects.create_user(username='notfollower')
         self.authorized_client2 = Client()

@@ -1,14 +1,11 @@
-from django.shortcuts import get_object_or_404, redirect, render
-from posts.models import Follow, Group, Post, User
-from posts.forms import CommentForm, PostForm
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.contrib.auth.decorators import login_required
+from django.conf import settings
+from django.shortcuts import get_object_or_404, redirect, render
+from posts.forms import CommentForm, PostForm
+from posts.models import Follow, Group, Post, User
 
 
-# Илья, привет) а если я настроил кэш прямо в шаблоне index.html,
-# как один из двух описанных в теории способов?
-# Подойдёт ли такое решение или нужно обязательно через декоратор сделать?
 def index(request):
     post_list = Post.objects.select_related('group')
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
@@ -22,7 +19,7 @@ def index(request):
 
 def group_posts(request, slug):
     group = get_object_or_404(Group, slug=slug)
-    post_list = group.groups.all()
+    post_list = group.posts.all()
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -34,9 +31,8 @@ def group_posts(request, slug):
 
 
 def profile(request, username):
-    user = get_object_or_404(User, username=username)
     author = get_object_or_404(User, username=username)
-    following = user.following.exists()
+    following = author.following.exists()
     post_list = author.posts.all().order_by('author')
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
@@ -45,7 +41,7 @@ def profile(request, username):
     context = {
         'page_obj': page_obj,
         'post_number': post_number,
-        'author': user,
+        'author': author,
         'following': following,
     }
     return render(request, 'posts/profile.html', context)
@@ -98,12 +94,11 @@ def post_edit(request, post_id):
         'post': post,
         'is_edit': True,
     }
-    if request.user == post.author:
-        if form.is_valid():
-            post = form.save(commit=False)
-            post.author = request.user
-            post.save()
-            return redirect(f'/posts/{post.id}', id=post_id)
+    if request.user == post.author and form.is_valid():
+        post = form.save(commit=False)
+        post.author = request.user
+        post.save()
+        return redirect(f'/posts/{post.id}', id=post_id)
     return render(request, 'posts/create_post.html', context)
 
 
@@ -131,10 +126,8 @@ def follow_index(request):
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    title = f'Подписки пользователя {user.get_full_name()}'
     context = {
-        'page_obj': page_obj,
-        'title': title,
+        'page_obj': page_obj
     }
     return render(request, 'posts/follow.html', context)
 

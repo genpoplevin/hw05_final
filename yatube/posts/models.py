@@ -28,7 +28,7 @@ class Post(models.Model):
         blank=True,
         null=True,
         on_delete=models.SET_NULL,
-        related_name='groups'
+        related_name='posts'
     )
     # Поле для картинки (необязательное)
     image = models.ImageField(
@@ -50,7 +50,8 @@ class Comment(models.Model):
     post = models.ForeignKey(
         Post,
         on_delete=models.CASCADE,
-        related_name='comments')
+        related_name='comments'
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
