@@ -61,6 +61,7 @@ class PostPagesTest(TestCase):
         self.user2 = User.objects.create_user(username='notfollower')
         self.authorized_client2 = Client()
         self.authorized_client2.force_login(self.user1)
+        cache.clear()
 
     # Проверяем используемые шаблоны
     def test_pages_uses_correct_template(self):

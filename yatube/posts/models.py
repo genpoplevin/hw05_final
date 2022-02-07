@@ -1,6 +1,5 @@
 from django.db import models
 from django.contrib.auth import get_user_model
-from django.db.models.constraints import UniqueConstraint
 from django.conf import settings
 
 
@@ -11,7 +10,6 @@ class Group(models.Model):
     title = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
     description = models.TextField()
-    UniqueConstraint
 
     def __str__(self) -> str:
         return self.title
@@ -72,7 +70,8 @@ class Follow(models.Model):
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name='follower',)
+        related_name='follower',
+    )
     author = models.ForeignKey(
         User,
         on_delete=models.CASCADE,

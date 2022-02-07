@@ -1,11 +1,14 @@
 from django.shortcuts import get_object_or_404, redirect, render
 from posts.models import Follow, Group, Post, User
+from posts.forms import CommentForm, PostForm
 from django.conf import settings
 from django.core.paginator import Paginator
-from .forms import CommentForm, PostForm
 from django.contrib.auth.decorators import login_required
 
 
+# Илья, привет) а если я настроил кэш прямо в шаблоне index.html,
+# как один из двух описанных в теории способов?
+# Подойдёт ли такое решение или нужно обязательно через декоратор сделать?
 def index(request):
     post_list = Post.objects.select_related('group')
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
@@ -33,7 +36,7 @@ def group_posts(request, slug):
 def profile(request, username):
     user = get_object_or_404(User, username=username)
     author = get_object_or_404(User, username=username)
-    following = user.is_authenticated and user.following.exists()
+    following = user.following.exists()
     post_list = author.posts.all().order_by('author')
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
@@ -95,11 +98,12 @@ def post_edit(request, post_id):
         'post': post,
         'is_edit': True,
     }
-    if form.is_valid():
-        post = form.save(commit=False)
-        post.author = request.user
-        post.save()
-        return redirect(f'/posts/{post.id}', id=post_id)
+    if request.user == post.author:
+        if form.is_valid():
+            post = form.save(commit=False)
+            post.author = request.user
+            post.save()
+            return redirect(f'/posts/{post.id}', id=post_id)
     return render(request, 'posts/create_post.html', context)
 
 
@@ -122,8 +126,8 @@ def follow_index(request):
        подписан текущий пользователь."""
     # Информация о текущем пользователе доступна в переменной request.user
     user = request.user
-    following = user.follower.values_list('author')
-    post_list = Post.objects.filter(author__in=following)
+    post_list = Post.objects.values('author').filter(
+        author__following__user=user)
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
@@ -141,12 +145,9 @@ def profile_follow(request, username):
     # Подписаться на автора
     user = request.user
     author = get_object_or_404(User, username=username)
-    follow = Follow.objects.filter(
-        user=user,
-        author=author)
-    if author != user and not follow.exists():
-        Follow.objects.create(user=user,
-                              author=author)
+    if author != user:
+        user.follower.get_or_create(user=user,
+                                    author=author)
 
     return redirect('posts:profile', username)
 
@@ -159,5 +160,6 @@ def profile_unfollow(request, username):
     author = get_object_or_404(User, username=username)
     follow = Follow.objects.filter(user=user,
                                    author=author)
-    follow.delete()
+    if follow.exists():
+        follow.delete()
     return redirect('posts:profile', username)
