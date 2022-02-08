@@ -146,6 +146,9 @@ class PostPagesTest(TestCase):
                 self.assertEqual(
                     response.context['post'].author.username, 'auth'
                 )
+                self.assertEqual(
+                    response.context['post'].image, self.post.image
+                )
 
     def test_post_edit_show_correct_context(self):
         """Шаблон post_edit сформирован с правильным контекстом."""
