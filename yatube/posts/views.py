@@ -127,7 +127,7 @@ def follow_index(request):
        подписан текущий пользователь."""
     # Информация о текущем пользователе доступна в переменной request.user
     user = request.user
-    post_list = Post.objects.values('author').filter(
+    post_list = Post.objects.filter(
         author__following__user=user)
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
     page_number = request.GET.get('page')
