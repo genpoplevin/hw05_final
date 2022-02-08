@@ -8,7 +8,6 @@ class StatusURLTests(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Создадим записи в БД для проверки доступности адресов
         cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
@@ -21,7 +20,6 @@ class StatusURLTests(TestCase):
         )
 
     def setUp(self):
-        # Шаблоны по адресам.
         self.templates_url_names = {
             '/': 'posts/index.html',
             f'/group/{self.group.slug}/': 'posts/group_list.html',
@@ -32,7 +30,6 @@ class StatusURLTests(TestCase):
             '/about/author/': 'about/author.html',
             '/about/tech/': 'about/tech.html',
         }
-        # Адреса страниц, доступные неавторизованному пользователю.
         self.urls_anonymous_user = [
             '/',
             f'/group/{self.group.slug}/',
@@ -42,18 +39,12 @@ class StatusURLTests(TestCase):
             '/about/tech/',
         ]
         self.template_404 = 'core/404.html'
-        # Устанавливаем данные для тестирования
-        # Создаём экземпляр клиента. Он неавторизован.
         self.guest_client = Client()
-        # Создаём пользователя
         self.user = User.objects.create_user(username='HasNoName')
-        # Создаём второй клиент
         self.authorized_client = Client()
-        # Авторизуем пользователя
         self.authorized_client.force_login(self.user)
         cache.clear()
 
-    # Проверка вызываемых шаблонов для каждого адреса
     def test_urls_uses_correct_template(self):
         """URL-адрес доступен использует соответствующий шаблон."""
         for address, template in self.templates_url_names.items():
@@ -72,16 +63,11 @@ class StatusURLTests(TestCase):
     def test_urls_anonymous_user_exists_at_desired_location(self):
         """Страницы из списка urls_anonymous_user в SetUp классе доступны
            неавторизованному пользователю."""
-        # Отправляем запрос через client,
-        # созданный в setUp()
         for url in self.urls_anonymous_user:
             with self.subTest(url=url):
                 response = self.guest_client.get(url)
-                # Утверждаем, что для прохождения теста
-                #  код должен быть равен 200
                 self.assertEqual(response.status_code, HTTPStatus.OK)
 
-    # Проверяем редиректы для неавторизованного пользователя
     def test_post_edit_url_redirect_anonymous_on_auth_login(self):
         """
         Страница по адресу /posts/post_id/edit/ доступна и перенаправит

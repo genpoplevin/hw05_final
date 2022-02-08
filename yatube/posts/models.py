@@ -30,14 +30,11 @@ class Post(models.Model):
         on_delete=models.SET_NULL,
         related_name='posts'
     )
-    # Поле для картинки (необязательное)
     image = models.ImageField(
         'Картинка',
         upload_to='posts/',
         blank=True
     )
-    # Аргумент upload_to указывает директорию,
-    # в которую будут загружаться пользовательские файлы.
 
     class Meta:
         ordering = ['-pub_date']
@@ -61,7 +58,9 @@ class Comment(models.Model):
         'Текст',
         help_text='Текст нового комментария'
     )
-    created = models.DateTimeField(auto_now_add=True)
+    created = models.DateTimeField(
+        auto_now_add=True
+    )
 
     def __str__(self):
         return self.text

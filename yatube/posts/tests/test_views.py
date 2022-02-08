@@ -1,8 +1,9 @@
+from django.core.cache import cache
 from django.test import Client, TestCase
+from http import HTTPStatus
 from django.urls import reverse
 from django import forms
-from yatube.settings import ARTICLES_SELECTION
-from django.core.cache import cache
+from django.conf import settings
 
 from posts.models import Follow, Group, Post, User
 
@@ -11,7 +12,6 @@ class PostPagesTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Создадим записи в БД
         cls.user = User.objects.create_user(username='auth')
         cls.group = Group.objects.create(
             title='Тестовая группа',
@@ -26,7 +26,6 @@ class PostPagesTest(TestCase):
         cache.clear()
 
     def setUp(self):
-        # Собираем в словарь пары "reverse(name): имя_html_шаблона."
         self.templates_page_names = {
             reverse('posts:index'): 'posts/index.html',
             reverse(
@@ -47,27 +46,20 @@ class PostPagesTest(TestCase):
             ): 'posts/create_post.html',
             reverse('posts:post_create'): 'posts/create_post.html',
         }
-        # Создаём экземпляр клиента. Он неавторизован.
         self.guest_client = Client()
-        # Создаём авторизованного пользователя
         self.user = User.objects.create_user(username='author')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
-        # Создаем второго авторизованого пользователя
         self.user1 = User.objects.create_user(username='follower')
         self.authorized_client1 = Client()
         self.authorized_client1.force_login(self.user1)
-        # Создаем третьего авторизованого пользователя
         self.user2 = User.objects.create_user(username='notfollower')
         self.authorized_client2 = Client()
         self.authorized_client2.force_login(self.user1)
         cache.clear()
 
-    # Проверяем используемые шаблоны
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
-        # Проверяем, что при обращении к name вызывается соответствующий
-        # HTML-шаблон
         for reverse_name, template in self.templates_page_names.items():
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
@@ -78,8 +70,6 @@ class PostPagesTest(TestCase):
         с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
         with self.subTest(response=response):
-            # Взяли первый элемент из списка и проверили, что его
-            # содержание совпадает с ожидаемым
             first_object = response.context['page_obj'][0]
             post_author_0 = first_object.author.username
             post_text_0 = first_object.text
@@ -114,8 +104,6 @@ class PostPagesTest(TestCase):
         ]
         for response in responses:
             with self.subTest(response=response):
-                # Взяли первый элемент из списка и проверили, что его
-                # содержание совпадает с ожидаемым
                 first_object = response.context['page_obj'][0]
                 post_author_0 = first_object.author.username
                 post_text_0 = first_object.text
@@ -126,8 +114,6 @@ class PostPagesTest(TestCase):
                 self.assertEqual(post_group_0, self.group.title)
                 self.assertEqual(post_image_0, self.post.image)
 
-    # Проверяем, что словарь context страницы posts/post_id
-    # содержит ожидаемые значения
     def test_post_detail_pages_show_correct_context(self):
         """Шаблон post_detail сформирован с правильным контекстом."""
         responses = [
@@ -155,40 +141,28 @@ class PostPagesTest(TestCase):
         response = self.authorized_client.get(reverse(
             'posts:post_edit',
             kwargs={'post_id': self.post.id}))
-        # Словарь ожидаемых типов полей формы:
-        # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
-        # Проверяем, что типы полей формы в словаре context
-        # соответствуют ожиданиям
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
-                # Проверяем, что поле формы является экземпляром
-                # указанного класса
                 self.assertIsInstance(form_field, expected)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_create_post_show_correct_context(self):
         """Шаблон create_post сформирован с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:post_create'))
-        # Словарь ожидаемых типов полей формы:
-        # указываем, объектами какого класса должны быть поля формы
         form_fields = {
             'text': forms.fields.CharField,
             'group': forms.fields.ChoiceField,
         }
-        # Проверяем, что типы полей формы в словаре context
-        # соответствуют ожиданиям
         for value, expected in form_fields.items():
             with self.subTest(value=value):
                 form_field = response.context.get('form').fields.get(value)
-                # Проверяем, что поле формы является экземпляром
-                # указанного класса
                 self.assertIsInstance(form_field, expected)
-                self.assertEqual(response.status_code, 200)
+                self.assertEqual(response.status_code, HTTPStatus.OK)
 
     def test_post_exist_index_group_list_profile(self):
         """При создании поста этот пост появляется на главной странице,
@@ -272,7 +246,6 @@ class PaginatorViewsTest(TestCase):
     @classmethod
     def setUpClass(cls):
         super().setUpClass()
-        # Создадим записи в БД
         cls.user = User.objects.create_user(username='auth')
         object_list = []
         cls.group = Group.objects.create(
@@ -289,13 +262,11 @@ class PaginatorViewsTest(TestCase):
             object_list.append(cls.post)
 
     def setUp(self):
-        # Создаём авторизованный клиент
         self.user = User.objects.create_user(username='StasBasov')
         self.authorized_client = Client()
         self.authorized_client.force_login(self.user)
         cache.clear()
 
-    # Проверка паджинатора страницы index
     def test_first_index_group_list_profile_page_contains_ten_records(self):
         """Проверка паджинатора первой страницы index, group_list, profile."""
         paginator_responses = [
@@ -306,9 +277,8 @@ class PaginatorViewsTest(TestCase):
                                     kwargs={'username': 'auth'})),
         ]
         for response in paginator_responses:
-            # Проверка: количество постов на первой странице равно 10.
             self.assertEqual(len(response.context['page_obj']),
-                             ARTICLES_SELECTION)
+                             settings.ARTICLES_SELECTION)
 
     def test_second_index_group_list_profile_page_contains_three_records(self):
         """Проверка паджинатора второй страницы index, group_list, profile."""
@@ -320,5 +290,4 @@ class PaginatorViewsTest(TestCase):
                                     kwargs={'username': 'auth'}) + '?page=2'),
         ]
         for response in paginator_responses:
-            # Проверка: на второй странице должно быть три поста.
             self.assertEqual(len(response.context['page_obj']), 3)
