@@ -7,8 +7,6 @@
 
 {% block content %}
 {% include 'posts/includes/switcher.html' %}
-  {% load cache %}
-  {% cache 20 posts page_number %}
   {% for post in page_obj %}
     <ul>
       <li>
@@ -33,7 +31,6 @@
     {% endif %}
     {% if not forloop.last %}<hr>{% endif %}
   {% endfor %}
-  {% endcache %}
 
   {% include 'posts/includes/paginator.html' %}
 
