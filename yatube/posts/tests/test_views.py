@@ -73,11 +73,28 @@ class PostPagesTest(TestCase):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
 
+    def test_index__page_show_correct_context(self):
+        """Шаблон index при запросе авторизованного пользователя сформирован
+        с правильным контекстом."""
+        response = self.authorized_client.get(reverse('posts:index'))
+        with self.subTest(response=response):
+            # Взяли первый элемент из списка и проверили, что его
+            # содержание совпадает с ожидаемым
+            first_object = response.context['page_obj'][0]
+            post_author_0 = first_object.author.username
+            post_text_0 = first_object.text
+            post_group_0 = first_object.group.title
+            post_image_0 = first_object.image
+            self.assertEqual(post_author_0, 'auth')
+            self.assertEqual(post_text_0, self.post.text)
+            self.assertEqual(post_group_0, self.group.title)
+            self.assertEqual(post_image_0, self.post.image)
+
     def test_index_group_list_profile_page_show_correct_context(self):
-        """Шаблоны index, group_list,
-           profile сформированы с правильным контекстом."""
+        """Шаблоны index (при запросе неавторизованного пользователя),
+        group_list, profile сформированы с правильным контекстом."""
         responses = [
-            self.authorized_client.get(reverse('posts:index')),
+            self.guest_client.get(reverse('posts:index')),
             self.authorized_client.get(
                 reverse('posts:group_list',
                         kwargs={'slug': 'test-slug'})
