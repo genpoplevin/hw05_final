@@ -39,8 +39,8 @@ def profile(request, username):
     user = request.user
     author = get_object_or_404(User, username=username)
     following = (
-        user.is_authenticated and
-        Follow.objects.filter(user=user, author=author)
+        user.is_authenticated
+        and Follow.objects.filter(user=user, author=author)
     )
     post_list = author.posts.all().order_by('author')
     paginator = Paginator(post_list, settings.ARTICLES_SELECTION)
