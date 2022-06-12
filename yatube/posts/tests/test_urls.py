@@ -1,7 +1,9 @@
-from django.test import TestCase, Client
 from http import HTTPStatus
-from posts.models import Group, Post, User
+
 from django.core.cache import cache
+from django.test import Client, TestCase
+
+from posts.models import Group, Post, User
 
 
 class StatusURLTests(TestCase):
@@ -45,8 +47,8 @@ class StatusURLTests(TestCase):
         self.authorized_client.force_login(self.user)
         cache.clear()
 
-    def test_urls_uses_correct_template(self):
-        """URL-адрес доступен использует соответствующий шаблон."""
+    def test_urls_exists_uses_correct_template(self):
+        """Все URL-адреса доступны и используют соответствующий шаблон."""
         for address, template in self.templates_url_names.items():
             with self.subTest(address=address):
                 response = self.authorized_client.get(address)
@@ -74,7 +76,8 @@ class StatusURLTests(TestCase):
         анонимного пользователя на страницу логина.
         """
         response = self.guest_client.get(
-            f'/posts/{self.post.id}/edit/', follow=True)
+            f'/posts/{self.post.id}/edit/', follow=True
+        )
         self.assertEqual(response.status_code, HTTPStatus.OK)
         self.assertRedirects(
             response,

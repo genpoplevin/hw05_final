@@ -1,9 +1,10 @@
-from django.core.cache import cache
-from django.test import Client, TestCase
 from http import HTTPStatus
-from django.urls import reverse
+
 from django import forms
 from django.conf import settings
+from django.core.cache import cache
+from django.test import Client, TestCase
+from django.urls import reverse
 
 from posts.models import Follow, Group, Post, User
 
@@ -26,7 +27,7 @@ class PostPagesTest(TestCase):
         cache.clear()
 
     def setUp(self):
-        self.templates_page_names = {
+        self.templates_pages_names = {
             reverse('posts:index'): 'posts/index.html',
             reverse(
                 'posts:group_list',
@@ -60,7 +61,7 @@ class PostPagesTest(TestCase):
 
     def test_pages_uses_correct_template(self):
         """URL-адрес использует соответствующий шаблон."""
-        for reverse_name, template in self.templates_page_names.items():
+        for reverse_name, template in self.templates_pages_names.items():
             with self.subTest(reverse_name=reverse_name):
                 response = self.authorized_client.get(reverse_name)
                 self.assertTemplateUsed(response, template)
@@ -69,16 +70,15 @@ class PostPagesTest(TestCase):
         """Шаблон index при запросе авторизованного пользователя сформирован
         с правильным контекстом."""
         response = self.authorized_client.get(reverse('posts:index'))
-        with self.subTest(response=response):
-            first_object = response.context['page_obj'][0]
-            post_author_0 = first_object.author.username
-            post_text_0 = first_object.text
-            post_group_0 = first_object.group.title
-            post_image_0 = first_object.image
-            self.assertEqual(post_author_0, 'auth')
-            self.assertEqual(post_text_0, self.post.text)
-            self.assertEqual(post_group_0, self.group.title)
-            self.assertEqual(post_image_0, self.post.image)
+        first_object = response.context['page_obj'][0]
+        post_author_0 = first_object.author.username
+        post_text_0 = first_object.text
+        post_group_0 = first_object.group.title
+        post_image_0 = first_object.image
+        self.assertEqual(post_author_0, self.post.author.username)
+        self.assertEqual(post_text_0, self.post.text)
+        self.assertEqual(post_group_0, self.group.title)
+        self.assertEqual(post_image_0, self.post.image)
 
     def test_index_group_list_profile_page_show_correct_context(self):
         """Шаблоны index (при запросе неавторизованного пользователя),
@@ -109,7 +109,7 @@ class PostPagesTest(TestCase):
                 post_text_0 = first_object.text
                 post_group_0 = first_object.group.title
                 post_image_0 = first_object.image
-                self.assertEqual(post_author_0, 'auth')
+                self.assertEqual(post_author_0, self.post.author.username)
                 self.assertEqual(post_text_0, self.post.text)
                 self.assertEqual(post_group_0, self.group.title)
                 self.assertEqual(post_image_0, self.post.image)
@@ -130,7 +130,8 @@ class PostPagesTest(TestCase):
             with self.subTest(response=response):
                 self.assertEqual(response.context['post'].text, self.post.text)
                 self.assertEqual(
-                    response.context['post'].author.username, 'auth'
+                    response.context['post'].author.username,
+                    self.post.author.username
                 )
                 self.assertEqual(
                     response.context['post'].image, self.post.image
@@ -167,18 +168,22 @@ class PostPagesTest(TestCase):
     def test_post_exist_index_group_list_profile(self):
         """При создании поста этот пост появляется на главной странице,
         странице с группами, странице профиля пользователя."""
-        response1 = self.authorized_client.get(reverse('posts:index'))
-        response2 = self.authorized_client.get(
-            reverse('posts:group_list',
-                    kwargs={'slug': 'test-slug'})
-        )
-        response3 = self.authorized_client.get(
-            reverse('posts:profile',
-                    kwargs={'username': 'auth'})
-        )
-        self.assertIn(Post.objects.all()[0], response1.context['page_obj'])
-        self.assertIn(Post.objects.all()[0], response2.context['page_obj'])
-        self.assertIn(Post.objects.all()[0], response3.context['page_obj'])
+        responses = [
+            self.authorized_client.get(
+                reverse('posts:index')
+            ),
+            self.authorized_client.get(
+                reverse('posts:group_list', kwargs={'slug': 'test-slug'})
+            ),
+            self.authorized_client.get(
+                reverse('posts:profile', kwargs={'username': 'auth'})
+            )
+        ]
+        for response in responses:
+            with self.subTest(response=response):
+                self.assertIn(
+                    Post.objects.all()[0],
+                    response.context['page_obj'])
 
     def test_post_not_in_another_group_page(self):
         """Пост не попадает в группу, для которой не был предназначен."""

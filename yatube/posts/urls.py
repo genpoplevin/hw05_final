@@ -1,7 +1,5 @@
 from django.urls import path
-
-from . import views
-
+from posts import views
 
 app_name = 'posts'
 
@@ -41,7 +39,11 @@ urlpatterns = [
         views.add_comment,
         name='add_comment'
     ),
-    path('follow/', views.follow_index, name='follow_index'),
+    path(
+        'follow/',
+        views.follow_index,
+        name='follow_index'
+    ),
     path(
         'profile/<str:username>/follow/',
         views.profile_follow,

@@ -1,5 +1,11 @@
-from django.shortcuts import render
 from http import HTTPStatus
+
+from django.shortcuts import render
+
+
+def csrf_failure(request, reason=''):
+    template = 'core/403csrf.html'
+    return render(request, template)
 
 
 def page_not_found(request, exception):
@@ -13,8 +19,3 @@ def page_not_found(request, exception):
 def server_error(request):
     template = 'core/500.html'
     return render(request, template, status=HTTPStatus.INTERNAL_SERVER_ERROR)
-
-
-def csrf_failure(request, reason=''):
-    template = 'core/403csrf.html'
-    return render(request, template)

@@ -1,7 +1,7 @@
+from django.conf import settings
 from django.test import TestCase
 
 from posts.models import Group, Post, User
-from django.conf import settings
 
 
 class PostModelTest(TestCase):
@@ -21,11 +21,11 @@ class PostModelTest(TestCase):
 
     def test_models_have_correct_object_names(self):
         """Проверяем, что у моделей корректно работает __str__."""
-        post = PostModelTest.post
-        group = PostModelTest.group
-        expected_object_post_name = post.text[:settings.FIRST_FIFTEEN_CHARS]
-        expected_object_group_name = group.title
-        self.assertEqual(expected_object_post_name, str(post))
-        self.assertEqual(expected_object_group_name, str(group))
+        expected_object_post_name = self.post.text[
+            :settings.FIRST_FIFTEEN_CHARS
+        ]
+        expected_object_group_name = self.group.title
+        self.assertEqual(expected_object_post_name, str(self.post))
+        self.assertEqual(expected_object_group_name, str(self.group))
         self.assertIsInstance(expected_object_post_name, str)
         self.assertIsInstance(expected_object_group_name, str)

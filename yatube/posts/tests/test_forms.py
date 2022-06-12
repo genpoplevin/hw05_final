@@ -1,12 +1,13 @@
 import shutil
 import tempfile
 
-from posts.forms import PostForm
-from posts.models import Comment, Group, Post, User
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import Client, TestCase, override_settings
 from django.urls import reverse
+
+from posts.forms import PostForm
+from posts.models import Comment, Group, Post, User
 
 TEMP_MEDIA_ROOT = tempfile.mkdtemp(dir=settings.BASE_DIR)
 
@@ -63,7 +64,8 @@ class PostFormTests(TestCase):
         self.authorized_client.post(
             reverse('posts:post_create'),
             data=self.form_data,
-            follow=True)
+            follow=True
+        )
         self.assertEqual(Post.objects.count(), posts_count + 1)
         self.assertTrue(Post.objects.filter(
             id=1,
@@ -76,7 +78,8 @@ class PostFormTests(TestCase):
             reverse('posts:post_edit',
                     kwargs={'post_id': self.post.id}),
             data=self.form_data,
-            follow=True)
+            follow=True
+        )
         self.post.save()
         post = Post.objects.get(id=1)
         self.assertEqual(post.text, self.post.text)
@@ -93,23 +96,26 @@ class PostFormTests(TestCase):
             data=form_data,
         )
         post = Post.objects.get(id=1)
-        self.assertRedirects(response, '/auth/login/?next=/posts/1/edit/')
+        self.assertRedirects(
+            response,
+            f'/auth/login/?next=/posts/{self.post.id}/edit/'
+        )
         self.assertNotEqual(post.text, self.expected_post)
 
-    def test_add_comment(self):
-        """После успешной отправки комментарий появляется на странице поста."""
+    def test_add_comment_authorized_client(self):
+        """После успешной отправки комментарий появляется на странице поста
+        (авторизованным пользователем)."""
         comments_count = Comment.objects.count()
         self.authorized_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=self.form_data,
             follow=True)
         self.assertEqual(Comment.objects.count(), comments_count + 1)
-        self.assertTrue(Comment.objects.filter(
-            id=1
-        ).exists())
+        self.assertTrue(Comment.objects.filter(id=1).exists())
 
-    def test_add_comment(self):
-        """После успешной отправки комментарий появляется на странице поста."""
+    def test_add_comment_guest_client(self):
+        """После успешной отправки комментарий не появляется на странице поста
+        (неавторизованным пользователем)."""
         self.guest_client.post(
             reverse('posts:add_comment', kwargs={'post_id': self.post.id}),
             data=self.form_data,
