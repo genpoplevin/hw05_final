@@ -125,7 +125,7 @@ venv.bak/
 .dmypy.json
 dmypy.json
 
-# Pyre type checker
+
 .pyre/
 
 # Папки, создаваемые средой разработки
@@ -149,4 +149,3 @@ dmypy.json
 static/
 yatube/posts/static/
 yatube/media/
-
