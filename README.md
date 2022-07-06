@@ -33,6 +33,11 @@ python -m venv venv
 source venv/Scripts/activate
 ```
 
+Перейти в папку hw05_final/
+```
+cd hw05_final
+```
+
 Установить зависимости из файла requirements.txt:
 
 
