@@ -39,6 +39,23 @@ source venv/Scripts/activate
 ```
 pip install -r requirments.txt
 ```
+Перейти в папку hw05_final/yatube/
+```
+cd yatube/
+```
+
+Создать и запустить миграции
+```
+python manage.py makemigrations
+python manage.py migrate
+```
+
+Запустить локальный сервер
+```
+cd yatube/
+python manage.py runserver
+```
+Тепкрь проект будет доступен по адресу http://127.0.0.1:8000/ в браузере
 
 
 
