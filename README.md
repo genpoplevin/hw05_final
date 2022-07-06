@@ -7,10 +7,10 @@
 подписываться на понравившихся авторов. Написан бэкенд, тесты к нему, созданы шаблоны с css.
 
 ### Технологии
- - _[Python 3.9.7](https://docs.python.org/3/)_
- - _[Django 2.2.16](https://docs.djangoproject.com/en/2.2/)_
- - _[Pillow 8.3.1](https://pillow.readthedocs.io/en/stable/)_
- - _[Unittest]_
+ - _Python 3.9.7
+ - _Django 2.2.16
+ - _Pillow 8.3.1
+ - _Unittest
 
 
 ### Как запустить проект:
