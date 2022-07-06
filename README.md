@@ -35,10 +35,8 @@ source venv/Scripts/activate
 ```
 
 Установить зависимости из файла requirements.txt:
-
-
 ```
-pip install -r requirments.txt
+pip install -r requirements.txt
 ```
 Перейти в папку hw05_final/yatube/
 ```
@@ -53,7 +51,6 @@ python manage.py migrate
 
 Запустить локальный сервер
 ```
-cd yatube/
 python manage.py runserver
 ```
 Тепкрь проект будет доступен по адресу http://127.0.0.1:8000/ в браузере
