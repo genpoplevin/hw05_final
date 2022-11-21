@@ -18,7 +18,7 @@
 Клонировать репозиторий:
 
 ```
-git clone https://github.com/kapkaevandrey/api_final_yatube.git
+git clone https://github.com/genpoplevin/hw05_final.git
 ```
 
 Перейти в папку hw05_final/
